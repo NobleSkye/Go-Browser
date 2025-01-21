@@ -121,9 +121,9 @@ func main() {
             const urlInput = document.getElementById('skyeUrlBar');
             let currentUrl = window.location.href;
 
-            // Visually change "google.com/" to "skyesearch.cc"
+            // Visually change "google.com/" to "skyesearch.cc/"
             if (currentUrl.includes('google.com/')) {
-                currentUrl = currentUrl.replace('google.com/', 'skyesearch.cc');
+                currentUrl = currentUrl.replace('google.com/', 'skyesearch.cc/');
             }
 
             if (urlInput && urlInput.value !== currentUrl) {
