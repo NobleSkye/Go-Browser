@@ -1,30 +1,40 @@
 package main
 
 import (
-    "github.com/webview/webview_go"
-    "strings"
+	"strings"
+
+	webview "github.com/webview/webview_go"
 )
 
 func main() {
-    // Create new webview instance
-    w := webview.New(true)
-    defer w.Destroy()
+	// Create new webview instance
+	w := webview.New(true)
+	defer w.Destroy()
 
-    // Set window properties
-    w.SetTitle("Skye's Browser")
-    w.SetSize(1024, 768, webview.HintNone)
+	// Set window properties
+	w.SetTitle("Skye's Browser")
+	w.SetSize(1024, 768, webview.HintNone)
 
-    // Bind navigation function
-    w.Bind("navigate", func(url string) {
-        // Add http:// if no protocol is specified
-        if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-            url = "https://" + url
-        }
-        w.Navigate(url)
-    })
+	// Bind navigation function
+	w.Bind("navigate", func(url string) {
+		// Add http:// if no protocol is specified
+		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			url = "https://" + url
+		}
+		w.Navigate(url)
+	})
 
-    // Initial navigation bar setup - this runs before any page loads
-    w.Init(`
+	// Bind back and forward navigation functions
+	w.Bind("goBack", func() {
+		w.Eval("window.history.back();")
+	})
+
+	w.Bind("goForward", func() {
+		w.Eval("window.history.forward();")
+	})
+
+	// Initial navigation bar setup - this runs before any page loads
+	w.Init(`
         // Function to inject our nav bar
         function createNavBar() {
             // Check if nav already exists
@@ -40,6 +50,26 @@ func main() {
                                'display: flex; align-items: center; padding: 0 10px; z-index: 2147483647; ' +
                                'font-family: Arial, sans-serif;';
 
+            // Create back button
+            const backButton = document.createElement('button');
+            backButton.textContent = 'Back';
+            backButton.style.cssText = 'padding: 5px 15px; background: #404040; color: #fff; ' +
+                                      'border: none; border-radius: 4px; cursor: pointer; ' +
+                                      'font-size: 14px;';
+            backButton.addEventListener('click', function() {
+                goBack();
+            });
+
+            // Create forward button
+            const forwardButton = document.createElement('button');
+            forwardButton.textContent = 'Forward';
+            forwardButton.style.cssText = 'padding: 5px 15px; background: #404040; color: #fff; ' +
+                                         'border: none; border-radius: 4px; cursor: pointer; ' +
+                                         'font-size: 14px;';
+            forwardButton.addEventListener('click', function() {
+                goForward();
+            });
+
             // Create URL input
             const urlInput = document.createElement('input');
             urlInput.id = 'skyeUrlBar';
@@ -50,6 +80,7 @@ func main() {
                                    'outline: none; min-width: 0;';
             urlInput.value = window.location.href;
             urlInput.addEventListener('keydown', function(e) {
+                // Allow navigating when "Enter" is pressed
                 if (e.key === 'Enter') {
                     navigate(this.value);
                 }
@@ -66,17 +97,19 @@ func main() {
             });
 
             // Assemble the nav bar
+            nav.appendChild(backButton);
+            nav.appendChild(forwardButton);
             nav.appendChild(urlInput);
             nav.appendChild(goButton);
 
             // Add to page
             document.documentElement.appendChild(nav);
 
-            // Add margin to body
+            // Add margin to body so the content is slightly below the nav bar
             if (document.body) {
-                document.body.style.marginTop = '40px';
+                document.body.style.marginTop = '50px'; // Increased margin to move content down
                 document.body.style.paddingTop = '0';
-                document.body.style.height = 'calc(100% - 40px)';
+                document.body.style.height = 'calc(100% - 50px)'; // Adjusted for the new margin
             }
         }
 
@@ -86,8 +119,15 @@ func main() {
         // Update URL in nav bar when it changes
         function updateUrl() {
             const urlInput = document.getElementById('skyeUrlBar');
-            if (urlInput && urlInput.value !== window.location.href) {
-                urlInput.value = window.location.href;
+            let currentUrl = window.location.href;
+
+            // Visually change "google.com/" to "skyesearch.cc"
+            if (currentUrl.includes('google.com/')) {
+                currentUrl = currentUrl.replace('google.com/', 'skyesearch.cc');
+            }
+
+            if (urlInput && urlInput.value !== currentUrl) {
+                urlInput.value = currentUrl;
             }
         }
 
@@ -110,9 +150,9 @@ func main() {
         }, 100);
     `)
 
-    // Load the initial page
-    w.Navigate("https://search.nobleskye.dev")
+	// Load the initial page
+	w.Navigate("https://newtab.skyesearch.cc")
 
-    // Run the webview
-    w.Run()
+	// Run the webview
+	w.Run()
 }
