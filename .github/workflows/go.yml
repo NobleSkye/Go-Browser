@@ -19,10 +19,10 @@ jobs:
 
     - name: Build
       run: |
-        cd /app
+        cd ./app
         go build -v ./...
 
     - name: Test
       run: |
-        cd /app
+        cd ./app
         go test -v ./...
