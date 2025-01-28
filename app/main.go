@@ -82,18 +82,26 @@ func main() {
             urlInput.addEventListener('keydown', function(e) {
                 // Allow navigating when "Enter" is pressed
                 if (e.key === 'Enter') {
-                    navigate(this.value);
+                    let url = this.value;
+                    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        url = 'https://' + url;
+                    }
+                    navigate(url);
                 }
             });
 
             // Create navigation button
             const goButton = document.createElement('button');
-            goButton.textContent = 'Go';
+            goButton.textContent = 'Search';
             goButton.style.cssText = 'padding: 5px 15px; background: #404040; color: #fff; ' +
                                    'border: none; border-radius: 4px; cursor: pointer; ' +
                                    'font-size: 14px;';
             goButton.addEventListener('click', function() {
-                navigate(urlInput.value);
+                let url = urlInput.value;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                navigate(url);
             });
 
             // Assemble the nav bar
@@ -107,10 +115,11 @@ func main() {
 
             // Add margin to body so the content is slightly below the nav bar
             if (document.body) {
-                document.body.style.marginTop = '50px'; // Increased margin to move content down
-                document.body.style.paddingTop = '0';
-                document.body.style.height = 'calc(100% - 50px)'; // Adjusted for the new margin
+                document.body.style.marginTop = '150px'; // Move content down by 150px
+                document.body.style.paddingTop = '0';   // Reset padding-top to 0
+                document.body.style.height = 'calc(100% - 150px)'; // Adjust content height accordingly
             }
+
         }
 
         // Create initial nav bar
@@ -121,14 +130,11 @@ func main() {
             const urlInput = document.getElementById('skyeUrlBar');
             let currentUrl = window.location.href;
 
-            // Visually change "google.com/" to "skyesearch.cc/"
-            if (currentUrl.includes('google.com/')) {
-                currentUrl = currentUrl.replace('google.com/', 'skyesearch.cc/');
+            // Visually change "google.com/search" to "skyesearch.cc/search"
+            if (currentUrl.includes('google.com/search')) {
+                currentUrl = currentUrl.replace('google.com/search', 'skyesearch.cc/search');
             }
 
-            if (urlInput && urlInput.value !== currentUrl) {
-                urlInput.value = currentUrl;
-            }
         }
 
         // Observe DOM changes to ensure nav bar stays present
@@ -147,7 +153,7 @@ func main() {
         setInterval(() => {
             createNavBar();
             updateUrl();
-        }, 100);
+        }, 1000);
     `)
 
 	// Load the initial page
